@@ -5,9 +5,9 @@ contract Chronicle {
     // Structure to hold car history details:
     struct CarHistory {
         string[] ownershipChanges;
-        string engineLoad;
-        string distanceWithMilage;
-        string throttlePosition;
+        uint engineLoad;
+        uint distanceWithMilage;
+        uint throttlePosition;
     }
 
     // Contract's owner (for simple access control)
@@ -35,9 +35,9 @@ contract Chronicle {
 
         // Initialize the CarHistory struct for the new car
         CarHistory storage newCarHistory = carHistories[vin];
-        newCarHistory.engineLoad = "30";
-        newCarHistory.distanceWithMilage = "10";
-        newCarHistory.throttlePosition = "0";
+        newCarHistory.engineLoad = 30;
+        newCarHistory.distanceWithMilage = 20;
+        newCarHistory.throttlePosition = 0;
 
         emit CarRegistered(vin, initialOwner);
     }
@@ -45,9 +45,9 @@ contract Chronicle {
     // Function to add or update car history
     function updateCarHistory(
         string memory vin,
-        string memory newEngineLoad,
-        string memory newDistanceWithMilage,
-        string memory newThrottlePosition
+        uint newEngineLoad,
+        uint newDistanceWithMilage,
+        uint newThrottlePosition
     ) public onlyCarOwner(vin) {
         CarHistory storage history = carHistories[vin];
 
@@ -98,86 +98,102 @@ contract Chronicle {
         return carHistories[vin];
     }
 
-    function evaluateCar(
-        string memory vin
-    ) public view returns (string memory) {
+    enum Condition {
+        Good,
+        Medium,
+        Bad
+    }
+
+    function evaluateCar(string memory vin) public view returns (Condition) {
         CarHistory memory history = carHistories[vin];
 
-        string memory engineLoadScore = evaluateEngineLoad(history.engineLoad);
-        string memory distanceScore = evaluateDistance(
-            history.distanceWithMilage
-        );
-        string memory throttleScore = evaluateThrottle(
-            history.throttlePosition
-        );
+        Condition engineLoadScore = evaluateEngineLoad(history.engineLoad);
+        Condition distanceScore = evaluateDistance(history.distanceWithMilage);
+        Condition throttleScore = evaluateThrottle(history.throttlePosition);
 
-        // Calculate global score
         return
             calculateGlobalScore(engineLoadScore, distanceScore, throttleScore);
     }
 
-    function evaluateEngineLoad(
-        string memory load
-    ) internal pure returns (string memory) {
-        uint loadValue = parseInt(load);
-        if (loadValue <= 40) return "Good";
-        if (loadValue <= 70) return "Medium";
-        return "Bad";
+    // function evaluateEngineLoad(
+    //     uint load
+    // ) internal pure returns (string memory) {
+    //     if (load <= 40) return "Good";
+    //     if (load <= 70) return "Medium";
+    //     return "Bad";
+    // }
+
+    // function evaluateDistance(
+    //     uint distance
+    // ) internal pure returns (string memory) {
+    //     if (distance <= 50000) return "Good";
+    //     if (distance <= 150000) return "Medium";
+    //     return "Bad";
+    // }
+
+    // function evaluateThrottle(
+    //     uint position
+    // ) internal pure returns (string memory) {
+    //     if (position <= 40) return "Good";
+    //     if (position <= 70) return "Medium";
+    //     return "Bad";
+    // }
+
+    function evaluateEngineLoad(uint load) internal pure returns (Condition) {
+        if (load <= 40) return Condition.Good;
+        if (load <= 70) return Condition.Medium;
+        return Condition.Bad;
     }
 
-    function evaluateDistance(
-        string memory distance
-    ) internal pure returns (string memory) {
-        uint distanceValue = parseInt(distance);
-        if (distanceValue <= 50000) return "Good";
-        if (distanceValue <= 150000) return "Medium";
-        return "Bad";
+    function evaluateDistance(uint distance) internal pure returns (Condition) {
+        if (distance <= 50000) return Condition.Good;
+        if (distance <= 150000) return Condition.Medium;
+        return Condition.Bad;
     }
 
-    function evaluateThrottle(
-        string memory position
-    ) internal pure returns (string memory) {
-        uint positionValue = parseInt(position);
-        if (positionValue <= 40) return "Good";
-        if (positionValue <= 70) return "Medium";
-        return "Bad";
+    function evaluateThrottle(uint position) internal pure returns (Condition) {
+        if (position <= 40) return Condition.Good;
+        if (position <= 70) return Condition.Medium;
+        return Condition.Bad;
     }
+
+    // function calculateGlobalScore(
+    //     Condition engineLoad,
+    //     Condition distance,
+    //     Condition throttle
+    // ) internal pure returns (string memory) {
+    //     uint score = 0;
+    //     if (engineLoad == Condition.Good) {
+    //         score += 1;
+    //     }
+    //     if (distance == Condition.Good) {
+    //         score += 1;
+    //     }
+    //     if (throttle == Condition.Good) {
+    //         score += 1;
+    //     }
+
+    //     if (score >= 2) return Condition.Good;
+    //     if (score == 1) return Condition.Medium;
+    //     return Condition.Bad;
+    // }
 
     function calculateGlobalScore(
-        string memory engineLoad,
-        string memory distance,
-        string memory throttle
-    ) internal pure returns (string memory) {
+        Condition engineLoad,
+        Condition distance,
+        Condition throttle
+    ) internal pure returns (Condition) {
         uint score = 0;
-        if (keccak256(bytes(engineLoad)) == keccak256(bytes("Good")))
-            score += 1;
-        if (keccak256(bytes(distance)) == keccak256(bytes("Good"))) score += 1;
-        if (keccak256(bytes(throttle)) == keccak256(bytes("Good"))) score += 1;
+        if (engineLoad == Condition.Good) score += 1;
+        if (distance == Condition.Good) score += 1;
+        if (throttle == Condition.Good) score += 1;
 
-        if (score >= 2) return "Good";
-        if (score == 1) return "Medium";
-        return "Bad";
+        if (score >= 2) return Condition.Good;
+        if (score == 1) return Condition.Medium;
+        return Condition.Bad;
     }
 
-    function parseInt(string memory s) internal pure returns (uint) {
-        bytes memory b = bytes(s);
-        uint result = 0;
-        uint i;
-        for (i = 0; i < b.length; i++) {
-            uint c = uint(uint8(b[i]));
-
-            if (c >= 48 && c <= 57) {
-                result = result * 10 + (c - 48);
-            } else {
-                revert("String contains non-numeric characters.");
-            }
-        }
-        return result;
-    }
-
-    // Modifier for access control (this is a simple example)
     modifier onlyCarOwner(string memory vin) {
-        // You can replace this with your access control logic
         require(carOwners[vin] == msg.sender, "Is not the owner");
         _;
     }

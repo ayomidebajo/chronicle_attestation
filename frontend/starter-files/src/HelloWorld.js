@@ -9,34 +9,38 @@ import {
 } from "./util/interact.js";
 import CarImage from './assets/volkswagen.png';
 import { LiaAngleRightSolid } from "react-icons/lia";
-// import alchemylogo from "./alchemylogo.svg";
+import {SiCarthrottle} from "react-icons/si";
 import { PiEngineFill } from "react-icons/pi";
+import {GiPathDistance} from "react-icons/gi";
 
 const HelloWorld = () => {
   //state variables
   const [walletAddress, setWallet] = useState("");
   const [status, setStatus] = useState("");
   const [message, setMessage] = useState("No connection to the network.");
-  const [carConnection, setCarConnection ] = useState("No connection to car");
+  const [carConnection, setCarConnection ] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [carData, setCarData] = useState([]);
 
   //called only once
-  // useEffect(() => {
-  //   async function addCarDataListener() {
-  //     const response = await fetch("https://strong-cooks-mix.loca.lt", {
-  //       method: "GET",
-  //       headers: {
-  //         "Bypass-Tunnel-Reminder": "your-custom-value",
-  //       },
-  //     });
-  //     const data = await response.json();
-  //     console.log(data, "data");
-  //     setCarData(data);
-  //   }
-  //   addCarDataListener();
+  useEffect(() => {
+    
+    addCarDataListener();
 
-  // }, [carData]);
+  }, []);
+
+  async function addCarDataListener() {
+    const response = await fetch("http://127.0.0.1:8000", {
+      method: "GET",
+      headers: {
+        "Bypass-Tunnel-Reminder": "your-custom-value",
+      },
+    });
+    const data = await response.json();
+    console.log(data, "data");
+    setCarData(data);
+    setCarConnection(true);
+  }
 
   // useEffect(async () => {}, []);
 
@@ -72,7 +76,7 @@ const HelloWorld = () => {
       </button>
 
       <h2 style={{ paddingTop: "50px" }}>Connection status:</h2>
-      <p>{carConnection}</p>
+      <p>{carConnection ? "Car connected" : "Car not connected"}</p>
 
       <h2 style={{ paddingTop: "18px" }}>Here is the data from your car:</h2>
 
@@ -85,13 +89,17 @@ const HelloWorld = () => {
         </div>
 
         <div>
-          <div className="grid">
+          {
+    Object.keys(carData).map(key => (
+      // console.log(carData[key], "key");
+      <>
+    <div className="grid">
             <div className="icon-wrapper">
               <PiEngineFill size={20} />
             </div>
             <div className="">
               <div className="field about">
-                <p>Engine</p>{" "}
+                <p>{carData[key].command.name}</p>
                 <span className="mt-1">
                   <LiaAngleRightSolid size={20} />
                 </span>{" "}
@@ -105,8 +113,13 @@ const HelloWorld = () => {
                 <span className="round-ball green">3</span>
               </div>
             </div>
+
+          
           </div>
           <hr />
+  </>
+    ))
+  }
         </div>
       </div>
 

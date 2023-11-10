@@ -10,5 +10,6 @@ __pycache__/
 .venv/
 
 # Custom ELM log
-elm.log
+*elm.log
 node_modules/
+.log

@@ -1,0 +1,5 @@
+COMMANDS_TO_WATCH = [
+    "ENGINE_LOAD",
+    "THROTTLE_POS",
+    "DISTANCE_W_MIL",
+]

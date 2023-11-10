@@ -1,0 +1,14 @@
+# VS Code
+.vscode/
+
+# Python Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python Virtual Environment
+.venv/
+
+# Custom ELM log
+elm.log
+node_modules/

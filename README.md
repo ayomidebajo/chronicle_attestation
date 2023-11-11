@@ -35,8 +35,6 @@ $ npm install @nomiclabs/hardhat-ethers ethers
 $ npm install dotenv
 $ npm install hardhat
 
-# Run the app
-$ npm start
 ```
 
 

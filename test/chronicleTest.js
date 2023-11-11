@@ -16,27 +16,24 @@ describe("Chronicle Contract", function () {
 
   beforeEach(async function () {
     Chronicle = await ethers.getContractFactory("Chronicle");
-    [owner, addr1] = await ethers.getSigners();
+    [owner, addr1, addr2] = await ethers.getSigners();
     chronicle = await Chronicle.deploy();
   });
 
-  describe("registerCar", function () {
-    it("Should register a car successfully", async function () {
-      await chronicle.registerCar("VIN123", addr1.address);
-      const carHistory = await chronicle.getCarHistory("VIN123");
-      expect(carHistory.engineLoad).to.equal(30);
-      expect(carHistory.distanceWithMilage).to.equal(20);
-      expect(carHistory.throttlePosition).to.equal(0);
-    });
-  });
 
   describe("registerCar", function () {
     it("Should register a car successfully", async function () {
-      await chronicle.registerCar("VIN123", addr1.address);
-      const carHistory = await chronicle.getCarHistory("VIN123");
-      expect(carHistory.engineLoad).to.equal(30);
-      expect(carHistory.distanceWithMilage).to.equal(20);
-      expect(carHistory.throttlePosition).to.equal(0);
+      const vin = "1HGCM82633A004352";
+      await expect(chronicle.registerCar(vin, addr1.address))
+        .to.emit(chronicle, "CarRegistered")
+        .withArgs(vin, addr1.address);
+    });
+
+    it("Should fail to register a car that's already registered", async function () {
+      const vin = "1HGCM82633A004352";
+      await chronicle.registerCar(vin, addr1.address);
+
+      await expect(chronicle.registerCar(vin, addr1.address)).to.be.revertedWith("Car already registered");
     });
   });
 

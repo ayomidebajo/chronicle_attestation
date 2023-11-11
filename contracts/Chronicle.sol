@@ -4,13 +4,12 @@ pragma solidity ^0.8.19;
 contract Chronicle {
     // Structure to hold car history details:
     struct CarHistory {
-        string[] ownershipChanges;
-        uint engineLoad;
-        uint distanceWithMilage;
-        uint throttlePosition;
+        // string[] ownershipChanges;
+        uint256 engineLoad;
+        uint256 distanceWithMilage;
+        uint256 throttlePosition;
     }
 
-    // Contract's owner (for simple access control)
     address public owner;
 
     constructor() {
@@ -18,7 +17,7 @@ contract Chronicle {
     }
 
     // Mapping from VIN to its history
-    mapping(string => CarHistory) private carHistories;
+    mapping(string => CarHistory) public carHistories;
 
     //check if the caller of the update functions is the real owner: string -> VIN, address -> owner address
     mapping(string => address) private carOwners;
@@ -30,14 +29,15 @@ contract Chronicle {
 
     //initial registration for a new car:
     function registerCar(string memory vin, address initialOwner) public {
-        require(carOwners[vin] == address(0), "Car already registered");
+        require(
+            carOwners[vin] != address(initialOwner),
+            "Car already registered"
+        );
         carOwners[vin] = initialOwner;
-
-        // Initialize the CarHistory struct for the new car
-        CarHistory storage newCarHistory = carHistories[vin];
-        newCarHistory.engineLoad = 30;
-        newCarHistory.distanceWithMilage = 20;
-        newCarHistory.throttlePosition = 0;
+        // CarHistory storage history = carHistories[vin];
+        // history.distanceWithMilage = 40;
+        // history.engineLoad = 20;
+        // history.throttlePosition = 50;
 
         emit CarRegistered(vin, initialOwner);
     }
@@ -71,8 +71,8 @@ contract Chronicle {
         carOwners[vin] = newOwner;
 
         // Update the ownership history in CarHistory
-        CarHistory storage history = carHistories[vin];
-        history.ownershipChanges.push(toString(newOwner));
+        // CarHistory storage history = carHistories[vin];
+        // history.ownershipChanges.push(toString(newOwner));
 
         emit OwnershipChanged(vin, toString(newOwner));
     }
@@ -115,30 +115,6 @@ contract Chronicle {
             calculateGlobalScore(engineLoadScore, distanceScore, throttleScore);
     }
 
-    // function evaluateEngineLoad(
-    //     uint load
-    // ) internal pure returns (string memory) {
-    //     if (load <= 40) return "Good";
-    //     if (load <= 70) return "Medium";
-    //     return "Bad";
-    // }
-
-    // function evaluateDistance(
-    //     uint distance
-    // ) internal pure returns (string memory) {
-    //     if (distance <= 50000) return "Good";
-    //     if (distance <= 150000) return "Medium";
-    //     return "Bad";
-    // }
-
-    // function evaluateThrottle(
-    //     uint position
-    // ) internal pure returns (string memory) {
-    //     if (position <= 40) return "Good";
-    //     if (position <= 70) return "Medium";
-    //     return "Bad";
-    // }
-
     function evaluateEngineLoad(uint load) internal pure returns (Condition) {
         if (load <= 40) return Condition.Good;
         if (load <= 70) return Condition.Medium;
@@ -156,27 +132,6 @@ contract Chronicle {
         if (position <= 70) return Condition.Medium;
         return Condition.Bad;
     }
-
-    // function calculateGlobalScore(
-    //     Condition engineLoad,
-    //     Condition distance,
-    //     Condition throttle
-    // ) internal pure returns (string memory) {
-    //     uint score = 0;
-    //     if (engineLoad == Condition.Good) {
-    //         score += 1;
-    //     }
-    //     if (distance == Condition.Good) {
-    //         score += 1;
-    //     }
-    //     if (throttle == Condition.Good) {
-    //         score += 1;
-    //     }
-
-    //     if (score >= 2) return Condition.Good;
-    //     if (score == 1) return Condition.Medium;
-    //     return Condition.Bad;
-    // }
 
     function calculateGlobalScore(
         Condition engineLoad,
